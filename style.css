@@ -9,7 +9,7 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    max-width: 400px;
+    width: 400px;
     margin: 1em;
     padding: 1em;
 }
@@ -21,9 +21,24 @@
 }
 
 .card img {
-    max-width: 300px;
+    width: 200px;
 }
 
 .dropdown-menu li{
     cursor: pointer;
+}
+
+.details-card {
+    border: 1px solid rgba(148, 148, 148, 0.349);
+    border-radius: 1em;
+    padding: 4em;
+}
+
+.details-card img {
+    max-width: 250px;
+}
+
+.price::first-letter {
+    color: rgb(0, 107, 0);
+    font-size: 1.2em;
 }
