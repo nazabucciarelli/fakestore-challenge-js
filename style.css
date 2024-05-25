@@ -42,3 +42,8 @@
     color: rgb(0, 107, 0);
     font-size: 1.2em;
 }
+
+#cart {
+    color: rgb(49, 49, 49);
+    padding: 1em;
+}

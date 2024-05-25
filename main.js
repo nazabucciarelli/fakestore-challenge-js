@@ -23,8 +23,7 @@ const getCategories = async () => {
 }
 
 const getProductsByCategoryName = async (categoryName) => {
-    emptyContainer("product-details-container");
-    emptyContainer("products-container");
+    emptyAllContainers();
     let sectionProducts = document.getElementById("products-container");
     fetch(API_URL + "/products/category/" + categoryName)
         .then((response) => response.json())
@@ -39,8 +38,7 @@ const getProductsByCategoryName = async (categoryName) => {
 }
 
 const getAllProducts = async () => {
-    emptyContainer("product-details-container");
-    emptyContainer("products-container");
+    emptyAllContainers();
     changeTitle("Welcome to Fake Store!")
     let sectionProducts = document.getElementById("products-container");
     fetch('https://fakestoreapi.com/products')
@@ -60,7 +58,6 @@ const emptyContainer = (id) => {
         container.removeChild(container.firstChild);
     }
 }
-
 
 const createProductElement = (product) => {
     let productDiv = document.createElement("div");
@@ -97,13 +94,13 @@ const createProductElement = (product) => {
 
     return productDiv;
 }
+
 const changeTitle = (newTitle) => {
     let title = document.getElementById("title");
     let titleText = document.createTextNode(newTitle);
     title.removeChild(title.firstChild);
     title.appendChild(titleText);
 }
-
 
 const viewProductDetailById = async (id, previousPage) => {
     fetch(API_URL + "/products/" + id)
@@ -133,6 +130,7 @@ const viewProductDetailById = async (id, previousPage) => {
             addToCartButton.classList.add("btn", "btn-success");
             let addToCartText = document.createTextNode("Add to cart");
             addToCartButton.appendChild(addToCartText);
+            addToCartButton.addEventListener('click', () => saveProductsLocalStorage(product))
 
             innerDivElement.appendChild(price);
             innerDivElement.appendChild(addToCartButton);
@@ -176,7 +174,46 @@ const viewProductDetailById = async (id, previousPage) => {
         .catch((error) => console.error(error));
 }
 
+const goToCart = () => {
+    emptyAllContainers();
+    changeTitle("Your cart");
+    let cartProductsContainer = document.getElementById("cart-products-container");
+    let cartProducts = getProductsLocalStorage();
+    for(let product of cartProducts){
+        let productElement = createProductElement(product);
+        cartProductsContainer.appendChild(productElement);
+    }
+}
+
+const addCartOnClickEvent = () => {
+    let cart = document.getElementById("cart");
+    cart.addEventListener('click', () => goToCart())
+
+}
+
+const saveProductsLocalStorage = async (product) => {
+    let products = await getProductsLocalStorage();
+    products.push(product);
+    localStorage.setItem("products", JSON.stringify(products));
+    var myModal = new bootstrap.Modal(document.getElementById('cartModal'), {
+        keyboard: false
+    });
+    myModal.show();
+}
+
+const getProductsLocalStorage = () => {
+    const products = localStorage.getItem("products");
+    return products ? JSON.parse(products) : [];
+}
+
+const emptyAllContainers = () => {
+    emptyContainer("product-details-container");
+    emptyContainer("products-container");
+    emptyContainer("cart-products-container");
+}
+
 const main = () => {
+    addCartOnClickEvent();
     getCategories();
     getAllProducts();
 }
