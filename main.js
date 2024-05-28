@@ -59,7 +59,7 @@ const emptyContainer = (id) => {
     }
 }
 
-const createProductElement = (product) => {
+const createProductElement = (product, cartProduct) => {
     let productDiv = document.createElement("div");
     productDiv.classList.add("card");
 
@@ -80,16 +80,24 @@ const createProductElement = (product) => {
     productPrice.classList.add("price");
     productPrice.appendChild(productPriceText);
 
-    let moreDetailsButton = document.createElement("button");
-    moreDetailsButton.classList.add("btn", "btn-primary")
-    let moreDetailsButtonText = document.createTextNode("See more details");
-    moreDetailsButton.appendChild(moreDetailsButtonText);
-    moreDetailsButton.addEventListener('click', () => viewProductDetailById(product.id, document.getElementById("title").textContent));
+    let extraButton = document.createElement("button");
+
+    if (cartProduct) {
+        extraButton.classList.add("btn", "btn-danger")
+        let removeFromCartText = document.createTextNode("Remove from cart");
+        extraButton.appendChild(removeFromCartText);
+        extraButton.addEventListener('click', () => deleteProductLocalStorage(product.id));
+    } else {
+        extraButton.classList.add("btn", "btn-primary")
+        let moreDetailsButtonText = document.createTextNode("See more details");
+        extraButton.appendChild(moreDetailsButtonText);
+        extraButton.addEventListener('click', () => viewProductDetailById(product.id, document.getElementById("title").textContent));
+    }
 
     productDiv.appendChild(productImage);
     cardBody.append(productTitle);
     cardBody.append(productPrice);
-    cardBody.appendChild(moreDetailsButton);
+    cardBody.appendChild(extraButton);
     productDiv.appendChild(cardBody);
 
     return productDiv;
@@ -106,8 +114,9 @@ const viewProductDetailById = async (id, previousPage) => {
     fetch(API_URL + "/products/" + id)
         .then((response) => response.json())
         .then((product) => {
+            emptyContainer("product-details-container");
             emptyContainer("products-container");
-            changeTitle("Details of " + product.title)
+            changeTitle("Details of " + product.title);
             let productDetailsContainer = document.getElementById("product-details-container")
 
             let cardElement = document.createElement("div");
@@ -130,10 +139,17 @@ const viewProductDetailById = async (id, previousPage) => {
             addToCartButton.classList.add("btn", "btn-success");
             let addToCartText = document.createTextNode("Add to cart");
             addToCartButton.appendChild(addToCartText);
-            addToCartButton.addEventListener('click', () => saveProductsLocalStorage(product))
+            addToCartButton.addEventListener('click', () => saveProductsLocalStorage(product, previousPage));
 
             innerDivElement.appendChild(price);
-            innerDivElement.appendChild(addToCartButton);
+            if (isProductInCart(product)) {
+                let alreadyInCartElement = document.createElement("p");
+                let alreadyInCartText = document.createTextNode("Item already in cart");
+                alreadyInCartElement.appendChild(alreadyInCartText);
+                innerDivElement.appendChild(alreadyInCartElement);
+            } else {
+                innerDivElement.appendChild(addToCartButton);
+            }
 
             let cardBody = document.createElement("div");
             cardBody.classList.add("card-body");
@@ -157,10 +173,8 @@ const viewProductDetailById = async (id, previousPage) => {
                     getAllProducts();
                 } else {
                     getProductsByCategoryName(previousPage.toLowerCase())
-                }
-            }
+                }}
             )
-
             cardBody.appendChild(cardTitle);
             cardBody.appendChild(cardText);
             flexDivElement.appendChild(imgElement);
@@ -176,11 +190,11 @@ const viewProductDetailById = async (id, previousPage) => {
 
 const goToCart = () => {
     emptyAllContainers();
-    changeTitle("Your cart");
+    changeTitle("Your cart. Total: $ " + calcTotalCart());
     let cartProductsContainer = document.getElementById("cart-products-container");
     let cartProducts = getProductsLocalStorage();
-    for(let product of cartProducts){
-        let productElement = createProductElement(product);
+    for (let product of cartProducts) {
+        let productElement = createProductElement(product, true);
         cartProductsContainer.appendChild(productElement);
     }
 }
@@ -188,10 +202,16 @@ const goToCart = () => {
 const addCartOnClickEvent = () => {
     let cart = document.getElementById("cart");
     cart.addEventListener('click', () => goToCart())
-
 }
 
-const saveProductsLocalStorage = async (product) => {
+const deleteProductLocalStorage = async (productId) => {
+    let products = await getProductsLocalStorage();
+    let updatedProducts = products.filter((p) => p.id != productId);
+    localStorage.setItem("products", JSON.stringify(updatedProducts));
+    goToCart();
+}
+
+const saveProductsLocalStorage = async (product, previousPage) => {
     let products = await getProductsLocalStorage();
     products.push(product);
     localStorage.setItem("products", JSON.stringify(products));
@@ -199,6 +219,12 @@ const saveProductsLocalStorage = async (product) => {
         keyboard: false
     });
     myModal.show();
+    viewProductDetailById(product.id, previousPage);
+}
+
+const isProductInCart = (product) => {
+    let products = getProductsLocalStorage();
+    return products.find((p) => p.id === product.id) !== undefined;
 }
 
 const getProductsLocalStorage = () => {
@@ -210,6 +236,15 @@ const emptyAllContainers = () => {
     emptyContainer("product-details-container");
     emptyContainer("products-container");
     emptyContainer("cart-products-container");
+}
+
+const calcTotalCart = () => {
+    let sum = 0;
+    let products = getProductsLocalStorage();
+    for(let product of products){
+        sum += product.price;
+    }
+    return sum;
 }
 
 const main = () => {

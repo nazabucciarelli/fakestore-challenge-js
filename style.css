@@ -46,4 +46,18 @@
 #cart {
     color: rgb(49, 49, 49);
     padding: 1em;
+    transform: scale(1.0);
+    transition: 0.3s;
+}
+
+#cart:hover{
+    cursor: pointer;
+    transform: scale(1.1);
+    transition: 0.3s;
+}
+
+#cart-products-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
 }
