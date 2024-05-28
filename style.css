@@ -61,3 +61,10 @@
     justify-content: center;
     flex-wrap: wrap;
 }
+
+.full-height-centered {
+    height: 50vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

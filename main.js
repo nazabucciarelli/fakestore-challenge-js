@@ -197,6 +197,13 @@ const goToCart = () => {
         let productElement = createProductElement(product, true);
         cartProductsContainer.appendChild(productElement);
     }
+    if (cartProducts.length === 0){
+        cartProductsContainer.classList.add("full-height-centered")
+        let emptyCartElement = document.createElement("h5");
+        let emptyCartText = document.createTextNode("The cart is empty");
+        emptyCartElement.appendChild(emptyCartText);
+        cartProductsContainer.appendChild(emptyCartElement);
+    }
 }
 
 const addCartOnClickEvent = () => {
@@ -252,6 +259,5 @@ const main = () => {
     getCategories();
     getAllProducts();
 }
-
 
 main();
